@@ -214,20 +214,20 @@ class PredictionLayer(Layer):
          - **use_bias**: bool.Whether add bias term or not.
     """
 
-    def __init__(self, task='binary', use_bias=True, nClass=2,**kwargs):
+    def __init__(self, task='binary', use_bias=True, nClass=4,use_bn=true,**kwargs):
         if task not in ["binary", "multiclass", "regression"]:
             raise ValueError("task must be binary,multiclass or regression")
         self.task = task
         self.use_bias = use_bias
         self.nClass=nClass
+        self.use_bn=use_bn
 
         super(PredictionLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
 
         if self.use_bias:
-            self.global_bias = self.add_weight(
-                shape=(1,), initializer=Zeros(), name="global_bias")
+            self.global_bias = self.add_weight(shape=(1,), initializer=Zeros(), name="global_bias")
 
         if self.use_bn:
             self.bn_layers = tf.keras.layers.BatchNormalization()
