@@ -214,7 +214,7 @@ class PredictionLayer(Layer):
          - **use_bias**: bool.Whether add bias term or not.
     """
 
-    def __init__(self, task='binary', use_bias=True, nClass=4,use_bn=true,**kwargs):
+    def __init__(self, task='binary', use_bias=True, nClass=4,use_bn=True,**kwargs):
         if task not in ["binary", "multiclass", "regression"]:
             raise ValueError("task must be binary,multiclass or regression")
         self.task = task
