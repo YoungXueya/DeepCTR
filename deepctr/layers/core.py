@@ -229,17 +229,14 @@ class PredictionLayer(Layer):
 
         if self.use_bias:
             self.global_bias = self.add_weight(shape=(1,), initializer=Zeros(), name="global_bias")
-
         if self.use_bn:
             self.bn_layers = tf.keras.layers.BatchNormalization()
-
         if self.task=='multiclass':
             self.kernel = self.add_weight(name='predLayer',
-                                          shape=(input_shape, self.nClass),
+                                          shape=(int(input_shape[-1]), self.nClass),
                                           initializer=glorot_normal(seed=self.seed),
                                           regularizer=l2(self.l2_reg),
                                           trainable=True)
-
             self.activation_layer = activation_layer("softmax")
 
         # Be sure to call this somewhere!
