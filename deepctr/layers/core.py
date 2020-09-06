@@ -214,14 +214,15 @@ class PredictionLayer(Layer):
          - **use_bias**: bool.Whether add bias term or not.
     """
 
-    def __init__(self, task='binary', use_bias=True, nClass=4,use_bn=True,**kwargs):
+    def __init__(self, task='binary', use_bias=True, nClass=4,use_bn=True,seed=1024,**kwargs):
         if task not in ["binary", "multiclass", "regression"]:
             raise ValueError("task must be binary,multiclass or regression")
         self.task = task
         self.use_bias = use_bias
         self.nClass=nClass
         self.use_bn=use_bn
-
+        self.seed=1024
+        self.l2_reg=0.00001
         super(PredictionLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -238,6 +239,7 @@ class PredictionLayer(Layer):
                                           initializer=glorot_normal(seed=self.seed),
                                           regularizer=l2(self.l2_reg),
                                           trainable=True)
+
             self.activation_layer = activation_layer("softmax")
 
         # Be sure to call this somewhere!
