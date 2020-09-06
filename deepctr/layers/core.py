@@ -253,7 +253,7 @@ class PredictionLayer(Layer):
         elif self.task == 'multiclass':
             # Add bias(already), batch nomalization, activtion
             if self.use_bn:
-                fc = self.bn_layers(x, training=training)
+                fc = self.bn_layers(x, training=True)
             fc = self.activation_layer(fc)
             x = fc
 
