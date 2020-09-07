@@ -250,7 +250,6 @@ class PredictionLayer(Layer):
         if self.task == "binary":
             print(x.shape)
             x = tf.sigmoid(x)
-
         elif self.task == 'multiclass':
             # Add bias(already), batch nomalization, activtion
             if self.use_bn:
