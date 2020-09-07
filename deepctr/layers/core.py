@@ -196,7 +196,6 @@ class DNN(Layer):
             shape = input_shape[:-1] + (self.hidden_units[-1],)
         else:
             shape = input_shape
-
         return tuple(shape)
 
     def get_config(self, ):
@@ -214,30 +213,17 @@ class PredictionLayer(Layer):
          - **use_bias**: bool.Whether add bias term or not.
     """
 
-    def __init__(self, task='binary', use_bias=True, nClass=4,use_bn=True,seed=1024,**kwargs):
+    def __init__(self, task='binary', nClass=1,use_bias=True,**kwargs):
         if task not in ["binary", "multiclass", "regression"]:
             raise ValueError("task must be binary,multiclass or regression")
         self.task = task
         self.use_bias = use_bias
         self.nClass=nClass
-        self.use_bn=use_bn
-        self.seed=1024
-        self.l2_reg=0.00001
         super(PredictionLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
-
         if self.use_bias:
-            self.global_bias = self.add_weight(shape=(1,), initializer=Zeros(), name="global_bias")
-        if self.use_bn:
-            self.bn_layers = tf.keras.layers.BatchNormalization()
-        if self.task=='multiclass':
-            self.kernel = self.add_weight(name='predLayer',
-                                          shape=(int(input_shape[-1]), self.nClass),
-                                          initializer=glorot_normal(seed=self.seed),
-                                          regularizer=l2(self.l2_reg),
-                                          trainable=True)
-            self.activation_layer = activation_layer("softmax")
+            self.global_bias = self.add_weight(shape=(self.nClass,), initializer=Zeros(), name="global_bias")
 
         # Be sure to call this somewhere!
         super(PredictionLayer, self).build(input_shape)
@@ -248,22 +234,20 @@ class PredictionLayer(Layer):
             x = tf.nn.bias_add(x, self.global_bias, data_format='NHWC')
 
         if self.task == "binary":
-            print(x.shape)
             x = tf.sigmoid(x)
+            output = tf.reshape(x, (-1, 1))
         elif self.task == 'multiclass':
             # Add bias(already), batch nomalization, activtion
-            if self.use_bn:
-                fc = self.bn_layers(x, training=True)
-            fc = self.activation_layer(fc)
-            output = fc
-            return output
-        output = tf.reshape(x, (-1, 1))
+            x = tf.nn.softmax(x)
+            output = tf.reshape(x, (-1, self.nClass))
+
         return output
 
     def compute_output_shape(self, input_shape):
-        return (None, 1)
+        return (input_shape[0], self.nClass)
+
 
     def get_config(self, ):
-        config = {'task': self.task, 'use_bias': self.use_bias}
+        config = {'task': self.task, 'use_bias': self.use_bias,'nClass':self.nClass}
         base_config = super(PredictionLayer, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

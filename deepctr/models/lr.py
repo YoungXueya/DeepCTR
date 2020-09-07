@@ -9,9 +9,9 @@ from ..layers.core import PredictionLayer, DNN
 from ..layers.utils import add_func
 
 
-def LR(linear_feature_columns, dnn_feature_columns,  l2_reg_linear=1e-5,
-        l2_reg_embedding=1e-5,  init_std=0.0001, seed=1024,
-        task='binary'):
+def LR(linear_feature_columns,   l2_reg_linear=1e-5,
+         init_std=0.0001, seed=1024,
+        task='binary',nClass=1):
     """Instantiates the Wide&Deep Learning architecture.
 
     :param linear_feature_columns: An iterable containing all the features used by linear part of the model.
@@ -28,20 +28,16 @@ def LR(linear_feature_columns, dnn_feature_columns,  l2_reg_linear=1e-5,
     :return: A Keras model instance.
     """
 
-    features = build_input_features(
-        linear_feature_columns + dnn_feature_columns)
+    features = build_input_features( linear_feature_columns)
 
     inputs_list = list(features.values())
 
-    sparse_embedding_list, dense_value_list = input_from_feature_columns(features, dnn_feature_columns,
-                                                                         l2_reg_embedding, init_std, seed)
-
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
-                                    l2_reg=l2_reg_linear)
+                                    l2_reg=l2_reg_linear,nClass=nClass)
 
 
 
-    output = PredictionLayer(task)(linear_logit)
+    output = PredictionLayer(task,nClass=nClass)(linear_logit)
 
     model = Model(inputs=inputs_list, outputs=output)
     return model

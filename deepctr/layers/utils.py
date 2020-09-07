@@ -65,9 +65,10 @@ class Hash(tf.keras.layers.Layer):
 
 class Linear(tf.keras.layers.Layer):
 
-    def __init__(self, l2_reg=0.0, mode=0, use_bias=False, **kwargs):
+    def __init__(self, l2_reg=0.0, mode=0, use_bias=False,nClass=1, **kwargs):
 
         self.l2_reg = l2_reg
+        self.nClass=nClass
         # self.l2_reg = tf.contrib.layers.l2_regularizer(float(l2_reg_linear))
         if mode not in [0,1,2]:
             raise ValueError("mode must be 0,1 or 2")
@@ -78,11 +79,11 @@ class Linear(tf.keras.layers.Layer):
     def build(self, input_shape):
         if self.use_bias:
             self.bias = self.add_weight(name='linear_bias',
-                                        shape=(1,),
+                                        shape=(self.nClass,),
                                         initializer=tf.keras.initializers.Zeros(),
                                         trainable=True)
         if self.mode != 0 :
-            self.dense = tf.keras.layers.Dense(units=1, activation=None, use_bias=False,
+            self.dense = tf.keras.layers.Dense(units=self.nClass, activation=None, use_bias=False,
                                            kernel_regularizer=tf.keras.regularizers.l2(self.l2_reg))
 
         super(Linear, self).build(input_shape)  # Be sure to call this somewhere!
@@ -97,7 +98,6 @@ class Linear(tf.keras.layers.Layer):
             linear_logit = self.dense(dense_input)
         else:
             sparse_input, dense_input = inputs
-
             linear_logit = reduce_sum(sparse_input, axis=-1, keep_dims=False) + self.dense(dense_input)
         if self.use_bias:
             linear_logit += self.bias

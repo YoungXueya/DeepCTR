@@ -15,7 +15,7 @@ from ..layers.core import PredictionLayer, DNN
 
 def FNN(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=(128, 128),
         l2_reg_embedding=1e-5, l2_reg_linear=1e-5, l2_reg_dnn=0, init_std=0.0001, seed=1024, dnn_dropout=0,
-        dnn_activation='relu', task='binary'):
+        dnn_activation='relu', task='binary',nClass=1):
     """Instantiates the Factorization-supported Neural Network architecture.
 
     :param linear_feature_columns: An iterable containing all the features used by linear part of the model.
@@ -40,16 +40,16 @@ def FNN(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=(128, 128)
                                                                          l2_reg_embedding, init_std, seed)
 
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
-                                    l2_reg=l2_reg_linear)
+                                    l2_reg=l2_reg_linear,nClass=nClass)
 
     dnn_input = combined_dnn_input(sparse_embedding_list, dense_value_list)
+
     deep_out = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn,
                    dnn_dropout, False, seed)(dnn_input)
-    dnn_logit = tf.keras.layers.Dense(
-        1, use_bias=False, activation=None)(deep_out)
+    dnn_logit = tf.keras.layers.Dense(nClass, use_bias=False, activation=None)(deep_out)
     final_logit = add_func([dnn_logit, linear_logit])
 
-    output = PredictionLayer(task)(final_logit)
+    output = PredictionLayer(task,nClass=nClass)(final_logit)
 
     model = tf.keras.models.Model(inputs=inputs_list,
                                   outputs=output)

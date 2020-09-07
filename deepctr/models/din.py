@@ -19,7 +19,7 @@ from ..layers.utils import concat_func, NoMask
 def DIN(dnn_feature_columns, history_feature_list, dnn_use_bn=False,
         dnn_hidden_units=(200, 80), dnn_activation='relu', att_hidden_size=(80, 40), att_activation="dice",
         att_weight_normalization=False, l2_reg_dnn=0, l2_reg_embedding=1e-6, dnn_dropout=0, init_std=0.0001, seed=1024,
-        task='binary'):
+        task='binary',nClass=1):
     """Instantiates the Deep Interest Network architecture.
 
     :param dnn_feature_columns: An iterable containing all the features used by deep part of the model.
@@ -92,9 +92,9 @@ def DIN(dnn_feature_columns, history_feature_list, dnn_use_bn=False,
     dnn_input = combined_dnn_input([deep_input_emb],dense_value_list)
     output = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn,
                  dnn_dropout, dnn_use_bn, seed)(dnn_input)
-    final_logit = Dense(1, use_bias=False)(output)
+    final_logit = Dense(nClass, use_bias=False)(output)
 
-    output = PredictionLayer(task)(final_logit)
+    output = PredictionLayer(task,nClass=nClass)(final_logit)
 
     model = Model(inputs=inputs_list, outputs=output)
     return model

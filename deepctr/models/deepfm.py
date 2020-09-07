@@ -19,7 +19,7 @@ from ..layers.utils import concat_func, add_func
 
 def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_NAME], dnn_hidden_units=(128, 128),
            l2_reg_linear=0.00001, l2_reg_embedding=0.00001, l2_reg_dnn=0, init_std=0.0001, seed=1024, dnn_dropout=0,
-           dnn_activation='relu', dnn_use_bn=False, task='binary'):
+           dnn_activation='relu', dnn_use_bn=False, task='binary',nClass=1):
     """Instantiates the DeepFM Network architecture.
 
     :param linear_feature_columns: An iterable containing all the features used by linear part of the model.
@@ -47,19 +47,19 @@ def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_
                                                                         init_std, seed, support_group=True)
 
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
-                                    l2_reg=l2_reg_linear)
-    fm_logit = add_func([FM()(concat_func(v, axis=1))
+                                    l2_reg=l2_reg_linear,nClass=nClass)
+    fm_logit = add_func([FM(nClass=nClass)(concat_func(v, axis=1))
                          for k, v in group_embedding_dict.items() if k in fm_group])
 
     dnn_input = combined_dnn_input(list(chain.from_iterable(
         group_embedding_dict.values())), dense_value_list)
     dnn_output = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout,
                      dnn_use_bn, seed)(dnn_input)
-    dnn_logit = tf.keras.layers.Dense(
-        1, use_bias=False, activation=None)(dnn_output)
+
+    dnn_logit = tf.keras.layers.Dense(nClass, use_bias=False, activation=None)(dnn_output)
 
     final_logit = add_func([linear_logit, fm_logit, dnn_logit])
 
-    output = PredictionLayer(task)(final_logit)
+    output = PredictionLayer(task,nClass=nClass)(final_logit)
     model = tf.keras.models.Model(inputs=inputs_list, outputs=output)
     return model

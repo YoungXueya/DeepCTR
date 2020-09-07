@@ -407,8 +407,8 @@ class FM(Layer):
         - [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf)
     """
 
-    def __init__(self, **kwargs):
-
+    def __init__(self,nClass, **kwargs):
+        self.nClass=nClass
         super(FM, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -433,11 +433,15 @@ class FM(Layer):
             concated_embeds_value * concated_embeds_value, axis=1, keep_dims=True)
         cross_term = square_of_sum - sum_of_square
         cross_term = 0.5 * reduce_sum(cross_term, axis=2, keep_dims=False)
-
         return cross_term
 
     def compute_output_shape(self, input_shape):
-        return (None, 1)
+        return (None, self.nClass)
+
+    def get_config(self, ):
+        config = {'nClass': self.nClass}
+        base_config = super(FM, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 class InnerProductLayer(Layer):

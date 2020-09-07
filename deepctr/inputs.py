@@ -169,7 +169,7 @@ def create_embedding_matrix(feature_columns, l2_reg, init_std, seed, prefix="", 
 
 
 def get_linear_logit(features, feature_columns, units=1, use_bias=False, init_std=0.0001, seed=1024, prefix='linear',
-                     l2_reg=0):
+                     l2_reg=0, nClass=1):
     linear_emb_list = [input_from_feature_columns(features, feature_columns, l2_reg, init_std, seed,
                                                   prefix=prefix + str(i))[0] for i in range(units)]
     _, dense_input_list = input_from_feature_columns(features, feature_columns, l2_reg, init_std, seed, prefix=prefix)
@@ -180,13 +180,13 @@ def get_linear_logit(features, feature_columns, units=1, use_bias=False, init_st
         if len(linear_emb_list[0]) > 0 and len(dense_input_list) > 0:
             sparse_input = concat_func(linear_emb_list[i])
             dense_input = concat_func(dense_input_list)
-            linear_logit = Linear(l2_reg, mode=2, use_bias=use_bias)([sparse_input, dense_input])
+            linear_logit = Linear(l2_reg, mode=2, use_bias=use_bias,nClass=nClass)([sparse_input, dense_input])
         elif len(linear_emb_list[0]) > 0:
             sparse_input = concat_func(linear_emb_list[i])
-            linear_logit = Linear(l2_reg, mode=0, use_bias=use_bias)(sparse_input)
+            linear_logit = Linear(l2_reg, mode=0, use_bias=use_bias,nClass=nClass)(sparse_input)
         elif len(dense_input_list) > 0:
             dense_input = concat_func(dense_input_list)
-            linear_logit = Linear(l2_reg, mode=1, use_bias=use_bias)(dense_input)
+            linear_logit = Linear(l2_reg, mode=1, use_bias=use_bias,nClass=nClass)(dense_input)
         else:
             #raise NotImplementedError
             return add_func([])
