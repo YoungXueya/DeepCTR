@@ -240,6 +240,8 @@ class PredictionLayer(Layer):
             # Add bias(already), batch nomalization, activtion
             x = tf.nn.softmax(x)
             output = tf.reshape(x, (-1, self.nClass))
+        else :
+            output=x
 
         return output
 
